@@ -3,144 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GPS Proximity Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Futura+Condensed:wght@700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <title>Vibe Tracker 2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Futura Condensed', sans-serif;
-      padding: 2rem;
-      text-align: center;
-      transition: background-color 0.5s ease;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
     }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      text-shadow: 0 0 10px #00ffff;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 2rem 3rem;
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
+      text-align: center;
+    }
+
+    #heat-icon {
+      font-size: 6rem;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 12px #ff6b6b);
+      margin-bottom: 1rem;
+    }
+
     #status {
       font-size: 1.5rem;
-      margin-top: 2rem;
-    }
-    #distance {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #333;
-    }
-    #message {
-      font-size: 1.75rem;
-      margin-top: 1.5rem;
-    }
-    #heat-icon {
-      font-size: 4rem;
-      margin: 1.5rem 0;
-      display: inline-block;
+      margin-top: 1rem;
+      text-shadow: 0 0 5px #fff;
     }
 
-    .pulse {
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
   </style>
 </head>
 <body>
-  <h1>Navigate to Target Location</h1>
-  <p>This tool will tell you if you're getting <strong>warmer</strong> or <strong>cooler</strong>.</p>
-  <div id="heat-icon">🌡️</div>
-  <p id="status">Getting your location...</p>
-  <p>Distance to target: <span id="distance">--</span> meters</p>
-  <p id="message"></p>
+  <div class="card">
+    <div id="heat-icon">🌡️</div>
+    <h1>Vibe Tracker 2.0</h1>
+    <div id="status">Detecting vibe...</div>
+  </div>
 
   <script>
-    const targetLat = 19.11426515101219;
-    const targetLon = 72.86528903659296;
+    const heatIcon = document.getElementById('heat-icon');
+    const statusText = document.getElementById('status');
 
-    let lastDistance = null;
-    let hasCelebrated = false;
-
-    function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-      const R = 6371000;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    }
-
-    function getEncouragingMessage(distance) {
-      if (distance > 100) return "You're on the way! 🚶‍♂️";
-      if (distance > 50) return "Warming up! 🔥";
-      if (distance > 20) return "Almost there, keep going! 💪";
-      if (distance > 5) return "🔥 You're right on target!";
-      return "🎯 You've caught the vibe!";
-    }
-
-    function getHeatIcon(distance, lastDistance) {
-      if (lastDistance === null) return "🌡️";
-      return distance < lastDistance ? "🔥" : "❄️";
-    }
-
-    function triggerConfetti() {
-      confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    }
-
-    function updateLocation(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-
-      const distance = getDistanceFromLatLonInMeters(lat, lon, targetLat, targetLon);
-      document.getElementById("distance").textContent = distance.toFixed(2);
-      document.getElementById("message").textContent = getEncouragingMessage(distance);
-
-      const body = document.body;
-      const heatIcon = document.getElementById("heat-icon");
-
-      // Update color and icon
-      if (lastDistance === null) {
-        body.style.backgroundColor = "#add8e6"; // light blue
-        heatIcon.textContent = "🌡️";
-        heatIcon.classList.remove("pulse");
-        document.getElementById("status").textContent = "Tracking started...";
-      } else if (distance < lastDistance) {
-        body.style.backgroundColor = "#ffcc99"; // light orange
+    function updateVibe(distance) {
+      if (distance < 50) {
         heatIcon.textContent = "🔥";
-        heatIcon.classList.add("pulse");
-        document.getElementById("status").textContent = "Warmer 🔥";
+        heatIcon.style.filter = "drop-shadow(0 0 12px #ff6b6b)";
+        statusText.textContent = "You’re on fire! Very close!";
+      } else if (distance < 150) {
+        heatIcon.textContent = "🌡️";
+        heatIcon.style.filter = "drop-shadow(0 0 12px #ffc107)";
+        statusText.textContent = "Getting warmer...";
       } else {
-        body.style.backgroundColor = "#add8e6"; // light blue
         heatIcon.textContent = "❄️";
-        heatIcon.classList.remove("pulse");
-        document.getElementById("status").textContent = "Cooler ❄️";
-      }
-
-      lastDistance = distance;
-
-      if (distance <= 5 && !hasCelebrated) {
-        triggerConfetti();
-        hasCelebrated = true;
+        heatIcon.style.filter = "drop-shadow(0 0 12px #6bc1ff)";
+        statusText.textContent = "Too cold... Keep moving!";
       }
     }
 
-    function showError(error) {
-      document.getElementById("status").textContent = `Error: ${error.message}`;
+    function getDistance() {
+      // Dummy example logic, replace with real distance logic later
+      const randomDistance = Math.floor(Math.random() * 300);
+      updateVibe(randomDistance);
     }
 
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition(updateLocation, showError, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 5000
-      });
-    } else {
-      document.getElementById("status").textContent = "Geolocation is not supported by this browser.";
-    }
+    setInterval(getDistance, 2000);
   </script>
 </body>
 </html>
