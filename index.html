@@ -14,28 +14,66 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: linear-gradient(135deg, #0f0f1a, #1e1e2f);
+      background: linear-gradient(135deg, #141e30, #243b55);
       color: #fff;
       overflow: hidden;
-    }
-    .card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 3rem;
       text-align: center;
-      box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
-      max-width: 400px;
+    }
+    h1 {
+      margin-bottom: 1rem;
     }
     #heat-icon {
       font-size: 4rem;
-      animation: float 2s ease-in-out infinite;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      animation: pulseGlow 2s infinite;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
     }
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+    @keyframes pulseGlow {
+      0% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      }
+      50% {
+        transform: scale(1.1);
+        text-shadow: 0 0 20px rgba(255, 100, 0, 0.7), 0 0 30px rgba(255, 100, 0, 0.4);
+      }
+      100% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      }
+    }
+    .glow-flame {
+      animation: pulseGlowFlame 2s infinite;
+    }
+    .glow-frost {
+      animation: pulseGlowFrost 2s infinite;
+    }
+    @keyframes pulseGlowFlame {
+      0% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(255, 100, 0, 0.5);
+      }
+      50% {
+        transform: scale(1.2);
+        text-shadow: 0 0 25px rgba(255, 100, 0, 0.8), 0 0 40px rgba(255, 100, 0, 0.5);
+      }
+      100% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(255, 100, 0, 0.5);
+      }
+    }
+    @keyframes pulseGlowFrost {
+      0% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
+      }
+      50% {
+        transform: scale(1.2);
+        text-shadow: 0 0 25px rgba(0, 200, 255, 0.8), 0 0 40px rgba(0, 200, 255, 0.5);
+      }
+      100% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
+      }
     }
     #distance {
       font-size: 2rem;
@@ -49,7 +87,7 @@
   </style>
 </head>
 <body>
-  <div class="card">
+  <div>
     <h1>Vibe Tracker</h1>
     <div id="heat-icon">🌡️</div>
     <div id="distance">-- m</div>
@@ -88,9 +126,9 @@
       return distance < lastDistance ? "🔥" : "❄️";
     }
 
-    function getGlowColor(distance, lastDistance) {
-      if (lastDistance === null) return "rgba(255,255,255,0.3)";
-      return distance < lastDistance ? "rgba(255, 100, 0, 0.7)" : "rgba(0, 200, 255, 0.6)";
+    function getGlowClass(distance, lastDistance) {
+      if (lastDistance === null) return "";
+      return distance < lastDistance ? "glow-flame" : "glow-frost";
     }
 
     function triggerConfetti() {
@@ -110,11 +148,11 @@
       document.getElementById("message").textContent = getEncouragingMessage(distance);
 
       const icon = getHeatIcon(distance, lastDistance);
-      const glow = getGlowColor(distance, lastDistance);
+      const glowClass = getGlowClass(distance, lastDistance);
 
       const heatIconEl = document.getElementById("heat-icon");
       heatIconEl.textContent = icon;
-      heatIconEl.style.textShadow = `0 0 20px ${glow}`;
+      heatIconEl.className = glowClass;
 
       if (lastDistance === null) {
         document.getElementById("status").textContent = "Tracking started...";
