@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPS Proximity Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      padding: 2rem;
+      text-align: center;
+      background-color: #f9f9f9;
+      transition: background-color 0.5s ease;
+      color: #222;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      margin: 0.5rem 0;
+    }
+    #status {
+      font-size: 1.2rem;
+      margin-top: 2rem;
+    }
+    #distance {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    #message {
+      font-size: 1.25rem;
+      margin-top: 1rem;
+    }
+    #heat-icon {
+      width: 80px;
+      height: 80px;
+      margin: 2rem auto;
+      transition: transform 0.5s ease;
+    }
+    .pulse {
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.15);
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Navigate to Target Location</h1>
+  <p>This tool shows if you're getting <strong>warmer</strong> or <strong>cooler</strong>.</p>
+  
+  <!-- Dynamic SVG Icon -->
+  <div id="heat-icon">
+    <!-- Default thermometer SVG -->
+    <svg id="icon-svg" xmlns="http://www.w3.org/2000/svg" fill="#444" viewBox="0 0 24 24"><path d="M17 5a5 5 0 0 0-10 0v7.59A7 7 0 1 0 17 12V5Zm-2 7.73V5a3 3 0 0 0-6 0v7.73a5 5 0 1 0 6 0Z"/></svg>
+  </div>
+
+  <p id="status">Getting your location...</p>
+  <p>Distance to target: <span id="distance">--</span> meters</p>
+  <p id="message"></p>
+
+  <script>
+    const targetLat = 19.11426515101219;
+    const targetLon = 72.86528903659296;
+    let lastDistance = null;
+    let hasCelebrated = false;
+
+    function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function getMessage(distance) {
+      if (distance > 100) return "You're on the way 🚶‍♀️";
+      if (distance > 50) return "Warming up 🔥";
+      if (distance > 20) return "Almost there 💪";
+      if (distance > 5) return "🔥 You're right on target!";
+      return "🎯 You've caught the vibe!";
+    }
+
+    function getIconSVG(distance, lastDistance) {
+      if (lastDistance === null) return 'thermometer';
+      return distance < lastDistance ? 'fire' : 'snow';
+    }
+
+    function updateSVG(iconType) {
+      const icon = document.getElementById("icon-svg");
+      const heatDiv = document.getElementById("heat-icon");
+      heatDiv.classList.add("pulse");
+
+      const icons = {
+        fire: `<path d="M12 2C8 6 10 9 10 12a2 2 0 1 0 4 0c0-1 .5-2.5 2-4 0 3 1 4 2 5a7 7 0 1 1-14 0c0-4 3-7 8-11Z"/>`,
+        snow: `<path d="M12 2v20M4.93 4.93l14.14 14.14M2 12h20M4.93 19.07l14.14-14.14"/>`,
+        thermometer: `<path d="M17 5a5 5 0 0 0-10 0v7.59A7 7 0 1 0 17 12V5Zm-2 7.73V5a3 3 0 0 0-6 0v7.73a5 5 0 1 0 6 0Z"/>`
+      };
+
+      icon.setAttribute("d", ""); // reset path
+      icon.setAttribute("viewBox", "0 0 24 24");
+      icon.innerHTML = icons[iconType] || icons.thermometer;
+    }
+
+    function triggerConfetti() {
+      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+    }
+
+    function updateLocation(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const distance = getDistanceFromLatLonInMeters(lat, lon, targetLat, targetLon);
+
+      document.getElementById("distance").textContent = distance.toFixed(2);
+      document.getElementById("message").textContent = getMessage(distance);
+
+      const iconType = getIconSVG(distance, lastDistance);
+      updateSVG(iconType);
+
+      if (lastDistance === null) {
+        document.getElementById("status").textContent = "Tracking started...";
+      } else if (distance < lastDistance) {
+        document.getElementById("status").textContent = "Warmer 🔥";
+        document.body.style.backgroundColor = "#ffe4b3";
+      } else {
+        document.getElementById("status").textContent = "Cooler ❄️";
+        document.body.style.backgroundColor = "#d0eaff";
+      }
+
+      if (distance <= 5 && !hasCelebrated) {
+        triggerConfetti();
+        hasCelebrated = true;
+      }
+
+      lastDistance = distance;
+    }
+
+    function showError(error) {
+      document.getElementById("status").textContent = `Error: ${error.message}`;
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(updateLocation, showError, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 5000
+      });
+    } else {
+      document.getElementById("status").textContent = "Geolocation is not supported by this browser.";
+    }
+  </script>
+</body>
+</html>
