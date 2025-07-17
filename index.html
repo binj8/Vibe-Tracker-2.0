@@ -14,18 +14,21 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: linear-gradient(135deg, #2b1e4a, #3b2b6d); /* Adjusted to be 12% more purple */
+      background: linear-gradient(135deg, #2b1e4a, #3b2b6d);
       color: #fff;
       overflow: hidden;
       text-align: center;
     }
+
     h1 {
       margin-bottom: 1rem;
     }
+
     #heat-icon {
       font-size: 4rem;
       text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
     }
+
     @keyframes pulseGlow {
       0% {
         transform: scale(1);
@@ -40,13 +43,16 @@
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
       }
     }
+
     .glow-flame {
       animation: pulseGlowFlame 2s infinite;
     }
+
     .glow-frost {
       animation: pulseGlowFrost 2s infinite;
       color: #00c8ff;
     }
+
     @keyframes pulseGlowFlame {
       0% {
         transform: scale(1);
@@ -61,6 +67,7 @@
         text-shadow: 0 0 10px rgba(255, 100, 0, 0.5);
       }
     }
+
     @keyframes pulseGlowFrost {
       0% {
         transform: scale(1);
@@ -75,19 +82,29 @@
         text-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
       }
     }
+
     #distance {
       font-size: 2rem;
       color: #00f9ff;
       margin: 1rem 0;
     }
+
     #status, #message {
       margin-top: 1rem;
       font-size: 1.2rem;
+    }
+
+    .logo-container img {
+      height: 60px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <div>
+    <div class="logo-container">
+        <img src="redbull-logo.png" alt="Red Bull Logo" class="logo" />
+    </div>
     <h1>Vibe Tracker</h1>
     <div id="heat-icon">🌡️</div>
     <div id="distance">-- m</div>
